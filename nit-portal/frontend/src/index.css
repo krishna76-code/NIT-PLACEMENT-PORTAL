@@ -1,0 +1,102 @@
+:root {
+  /* Light theme */
+  --bg: #f4f3ef;
+  --bg-card: #ffffff;
+  --bg-nav: rgba(244, 243, 239, 0.88);
+  --bg-input: #f0efe9;
+  --bg-hover: #eceae2;
+  --border: #e2e0d6;
+  --border-strong: #ccc9bb;
+  --text: #1a1916;
+  --text-2: #5a5850;
+  --text-3: #9e9b90;
+  --accent: #2a52be;
+  --accent-light: #e8edfb;
+  --accent-text: #1a3a9e;
+  --primary: #2a52be;
+  --primary-hover: #1a3a9e;
+  --green: #1a7a4a;
+  --green-light: #e6f5ed;
+  --red: #c23b22;
+  --red-light: #fdecea;
+  --amber: #b56a00;
+  --amber-light: #fef3e2;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+[data-theme="dark"] {
+  --bg: #111110;
+  --bg-card: #1c1c1a;
+  --bg-nav: rgba(17, 17, 16, 0.92);
+  --bg-input: #252523;
+  --bg-hover: #2a2a27;
+  --border: #2e2e2a;
+  --border-strong: #3d3d38;
+  --text: #f0ede6;
+  --text-2: #a8a49a;
+  --text-3: #6a6760;
+  --accent: #4d7bef;
+  --accent-light: #1a2540;
+  --accent-text: #8badff;
+  --primary: #4d7bef;
+  --primary-hover: #3b66d8;
+  --green: #3db876;
+  --green-light: #0e2a1c;
+  --red: #f07060;
+  --red-light: #2a1210;
+  --amber: #f5a623;
+  --amber-light: #2a1e08;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.25s, color 0.25s;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, .brand {
+  font-family: 'Syne', sans-serif;
+}
+
+a { color: inherit; text-decoration: none; }
+
+input, select, textarea {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+button {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-sm);
+  transition: all 0.18s;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }

@@ -1,0 +1,114 @@
+.applicants-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.applicants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.applicants-header h2 {
+  margin: 0 0 0.5rem 0;
+}
+
+.applicants-header p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.btn-export {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-export:hover {
+  background: var(--primary-hover);
+}
+
+.table-responsive {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.applicants-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.applicants-table th,
+.applicants-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.applicants-table th {
+  background: var(--bg);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.student-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-info strong {
+  color: var(--text);
+}
+
+.student-info span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.resume-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.resume-link:hover {
+  text-decoration: underline;
+}
+
+.status-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-applied { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.status-shortlisted { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.status-interviewed { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.status-selected { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.status-rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.status-select {
+  padding: 0.3rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.empty-row {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem !important;
+}
