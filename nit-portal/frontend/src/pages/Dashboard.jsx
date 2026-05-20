@@ -9,7 +9,7 @@ import {
 import 'react-circular-progressbar/dist/styles.css'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { fetchDrives, fetchStats, createDrive, deleteDrive } from '../services/api'
+import { fetchDrives, fetchStats, createDrive, deleteDrive, getStudentDashboardStats, getStudentProfile } from '../services/api'
 import DriveForm from '../components/DriveForm'
 import './Dashboard.css'
 
@@ -39,16 +39,30 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
 
+  const [studentStats, setStudentStats] = useState(null)
+  const [profile, setProfile] = useState(null)
+
   const isDark = theme === 'dark'
 
   const loadData = async () => {
     try {
-      const [dRes, sRes] = await Promise.all([
-        fetchDrives({ limit: 200 }),
-        fetchStats('2026')
-      ])
-      setDrives(dRes.data.drives)
-      setStats(sRes.data)
+      if (isCoordinator) {
+        const [dRes, sRes] = await Promise.all([
+          fetchDrives({ limit: 200 }),
+          fetchStats('2026')
+        ])
+        setDrives(dRes.data.drives)
+        setStats(sRes.data)
+      } else {
+        const [dRes, sRes, pRes] = await Promise.all([
+          fetchDrives({ limit: 200 }),
+          getStudentDashboardStats(),
+          getStudentProfile()
+        ])
+        setDrives(dRes.data.drives)
+        setStudentStats(sRes.data)
+        setProfile(pRes.data)
+      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -56,7 +70,7 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData() }, [isCoordinator])
 
   const handleDelete = async (id) => {
     if (!window.confirm('Permanently delete this record?')) return
@@ -155,58 +169,134 @@ export default function Dashboard() {
 
       {/* KPI Row */}
       <div className="kpi-row">
-        <div className="kpi-goal-card">
-          <div className="progress-ring">
-            <CircularProgressbar
-              value={goalPct}
-              text={`${goalPct}%`}
-              styles={buildStyles({
-                pathColor: isDark ? '#4d7bef' : '#2a52be',
-                textColor: isDark ? '#f0ede6' : '#1a1916',
-                trailColor: isDark ? '#2e2e2a' : '#f0efe9',
-                textSize: '22px'
-              })}
-            />
-          </div>
-          <div>
-            <p className="kpi-label">Placement Target</p>
-            <p className="kpi-value">{totalPlaced.toLocaleString()}</p>
-            <p className="kpi-sub">of {PLACEMENT_GOAL} students</p>
-          </div>
-        </div>
+        {isCoordinator ? (
+          <>
+            <div className="kpi-goal-card">
+              <div className="progress-ring">
+                <CircularProgressbar
+                  value={goalPct}
+                  text={`${goalPct}%`}
+                  styles={buildStyles({
+                    pathColor: isDark ? '#4d7bef' : '#2a52be',
+                    textColor: isDark ? '#f0ede6' : '#1a1916',
+                    trailColor: isDark ? '#2e2e2a' : '#f0efe9',
+                    textSize: '22px'
+                  })}
+                />
+              </div>
+              <div>
+                <p className="kpi-label">Placement Target</p>
+                <p className="kpi-value">{totalPlaced.toLocaleString()}</p>
+                <p className="kpi-sub">of {PLACEMENT_GOAL} students</p>
+              </div>
+            </div>
 
-        <KpiCard
-          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>}
-          label="Total Recruiters"
-          value={stats?.totalCompanies || 0}
-          color="accent"
-        />
-        <KpiCard
-          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}
-          label="Avg. CTC"
-          value={`${stats?.avgCTC || '—'} LPA`}
-          color="green"
-        />
-        <KpiCard
-          icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
-          label="Highest CTC"
-          value={`${stats?.maxCTC || '—'} LPA`}
-          color="amber"
-        />
+            <KpiCard
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>}
+              label="Total Recruiters"
+              value={stats?.totalCompanies || 0}
+              color="accent"
+            />
+            <KpiCard
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}
+              label="Avg. CTC"
+              value={`${stats?.avgCTC || '—'} LPA`}
+              color="green"
+            />
+            <KpiCard
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
+              label="Highest CTC"
+              value={`${stats?.maxCTC || '—'} LPA`}
+              color="amber"
+            />
+          </>
+        ) : (
+          <>
+            <div className="kpi-goal-card">
+              <div className="progress-ring">
+                <CircularProgressbar
+                  value={(() => {
+                    if (!profile) return 0;
+                    const fields = ['branch', 'program', 'cgpa', 'phone', 'resumeLink', 'passingYear'];
+                    const filled = fields.filter(f => profile[f] && profile[f] !== 0 && profile[f] !== '').length;
+                    return Math.round((filled / fields.length) * 100);
+                  })()}
+                  text={`${(() => {
+                    if (!profile) return 0;
+                    const fields = ['branch', 'program', 'cgpa', 'phone', 'resumeLink', 'passingYear'];
+                    const filled = fields.filter(f => profile[f] && profile[f] !== 0 && profile[f] !== '').length;
+                    return Math.round((filled / fields.length) * 100);
+                  })()}%`}
+                  styles={buildStyles({
+                    pathColor: isDark ? '#10b981' : '#059669',
+                    textColor: isDark ? '#f0ede6' : '#1a1916',
+                    trailColor: isDark ? '#2e2e2a' : '#f0efe9',
+                    textSize: '22px'
+                  })}
+                />
+              </div>
+              <div>
+                <p className="kpi-label">Profile Completion</p>
+                <p className="kpi-sub">Complete profile to apply</p>
+                <Link to="/profile" style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>Update Profile →</Link>
+              </div>
+            </div>
+
+            <KpiCard
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>}
+              label="Applications"
+              value={studentStats?.appliedCount || 0}
+              color="accent"
+            />
+            <KpiCard
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
+              label="Eligible Drives"
+              value={studentStats?.eligibleCount || 0}
+              color="green"
+            />
+            <KpiCard
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>}
+              label="Rejected"
+              value={studentStats?.rejectedCount || 0}
+              color="red"
+            />
+          </>
+        )}
       </div>
 
       {/* Main Grid */}
       <div className="dash-grid">
         <div className="card chart-card">
           <div className="card-header">
-            <h3>Branch-wise Placements</h3>
-            <Link to="/stats" className="card-link">View all stats →</Link>
+            <h3>{isCoordinator ? 'Branch-wise Placements' : 'Upcoming Deadlines'}</h3>
+            {isCoordinator ? <Link to="/stats" className="card-link">View all stats →</Link> : <Link to="/drives" className="card-link">View all drives →</Link>}
           </div>
           <div className="chart-wrap">
-            {Object.keys(branchWise).length > 0 ? (
-              <Bar data={chartData} options={chartOptions} />
+            {isCoordinator ? (
+              Object.keys(branchWise).length > 0 ? (
+                <Bar data={chartData} options={chartOptions} />
+              ) : (
+                <div className="empty-chart">No data yet</div>
+              )
             ) : (
-              <div className="empty-chart">No data yet</div>
+              <div className="upcoming-deadlines-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {studentStats?.upcomingDeadlines?.length > 0 ? (
+                  studentStats.upcomingDeadlines.map(d => (
+                    <div key={d._id} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', background: 'var(--surface-50)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 5px 0' }}>{d.company} <span className="type-tag">{d.driveType}</span></h4>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>{d.role} • {d.ctc ? `${d.ctc} LPA` : 'CTC TBA'}</p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <strong style={{ color: 'var(--amber)', fontSize: '0.9rem', display: 'block' }}>{d.registrationEnd ? new Date(d.registrationEnd).toLocaleDateString() : d.date}</strong>
+                        <Link to={`/drives`} style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>Apply →</Link>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="empty-chart">No upcoming deadlines!</div>
+                )}
+              </div>
             )}
           </div>
         </div>

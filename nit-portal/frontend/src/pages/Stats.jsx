@@ -99,6 +99,21 @@ export default function StatsPage() {
     }
   }
 
+  // Doughnut — application breakdown
+  const appBreakdown = stats?.applicationBreakdown || {};
+  const appLabels = Object.keys(appBreakdown);
+  const appData = {
+    labels: appLabels,
+    datasets: [{
+      data: Object.values(appBreakdown),
+      backgroundColor: isDark
+        ? ['#4d7bef', '#3db876', '#f5a623', '#8c64ff', '#3b82f6', '#f07060']
+        : ['#2a52be', '#1a7a4a', '#b56a00', '#6e46dc', '#3b82f6', '#c23b22'],
+      borderWidth: 0,
+      hoverOffset: 6,
+    }]
+  }
+
   const lineOpts = {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: tooltipDefaults },
@@ -195,6 +210,17 @@ export default function StatsPage() {
               <div className="chart-body" style={{ height: 280 }}>
                 {typeLabels.length > 0
                   ? <Doughnut data={typeData} options={doughnutOpts} />
+                  : <div className="no-data">No data available</div>}
+              </div>
+            </div>
+
+            <div className="chart-card">
+              <div className="card-header">
+                <h3>Application Status Overview</h3>
+              </div>
+              <div className="chart-body" style={{ height: 280 }}>
+                {appLabels.length > 0
+                  ? <Doughnut data={appData} options={doughnutOpts} />
                   : <div className="no-data">No data available</div>}
               </div>
             </div>

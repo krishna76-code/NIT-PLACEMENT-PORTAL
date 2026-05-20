@@ -110,7 +110,7 @@ router.put('/:appId/status', auth, async (req, res) => {
     }
 
     const { status } = req.body;
-    const validStatuses = ['applied', 'shortlisted', 'interviewed', 'selected', 'rejected'];
+    const validStatuses = ['applied', 'shortlisted', 'aptitude', 'interview', 'selected', 'rejected'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status.' });
     }

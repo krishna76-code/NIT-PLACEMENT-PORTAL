@@ -40,6 +40,7 @@ export const fetchStats = (batch) => api.get('/api/stats', { params: { batch } }
 export const registerStudent = (data) => api.post('/api/auth/register-student', data)
 export const getStudentProfile = () => api.get('/api/student/profile')
 export const updateStudentProfile = (data) => api.put('/api/student/profile', data)
+export const getStudentDashboardStats = () => api.get('/api/student/dashboard-stats')
 
 // Applications
 export const applyToDrive = (driveId) => api.post(`/api/applications/${driveId}`)
