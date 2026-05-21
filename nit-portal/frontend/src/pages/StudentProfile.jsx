@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getStudentProfile, updateStudentProfile } from '../services/api'
+import { getStudentProfile, updateStudentProfile, uploadResume } from '../services/api'
 import { toast } from 'react-hot-toast'
 import './StudentProfile.css'
 
@@ -10,10 +10,46 @@ export default function StudentProfilePage() {
     cgpa: 0,
     phone: '',
     resumeLink: '',
-    passingYear: new Date().getFullYear()
+    passingYear: new Date().getFullYear(),
+    resumeScore: null,
+    resumeFeedback: '',
+    resumeKeywords: []
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast.error('Only PDF files are allowed.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    setUploading(true);
+    const loadingToast = toast.loading('Uploading and analyzing with AI...');
+    try {
+      const res = await uploadResume(formData);
+      setProfile({
+        ...profile,
+        resumeScore: res.data.score,
+        resumeFeedback: res.data.feedback,
+        resumeKeywords: res.data.keywords
+      });
+      toast.success('Resume analyzed successfully!', { id: loadingToast });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to upload and analyze resume.', { id: loadingToast });
+    } finally {
+      setUploading(false);
+      // Reset input so they can upload again if needed
+      e.target.value = null;
+    }
+  }
 
   useEffect(() => {
     fetchProfile()
@@ -100,15 +136,41 @@ export default function StudentProfilePage() {
             />
           </div>
 
-          <div className="form-group">
-            <label>Resume Link (Google Drive / S3 URL)</label>
-            <input 
-              type="url" 
-              placeholder="https://..."
-              value={profile.resumeLink} 
-              onChange={e => setProfile({...profile, resumeLink: e.target.value})}
-              required
-            />
+          <div className="form-group ai-resume-section">
+            <label>Smart Resume Upload (PDF only)</label>
+            <div className="resume-upload-wrapper">
+              <input 
+                type="file" 
+                accept="application/pdf"
+                onChange={handleResumeUpload}
+                disabled={uploading}
+                id="resume-upload"
+                className="file-input"
+              />
+              {uploading && <span className="upload-status">Analyzing with AI...</span>}
+            </div>
+            
+            {profile.resumeScore !== null && (
+              <div className="ai-feedback-box">
+                <div className="score-header">
+                  <h4>ATS Match Score</h4>
+                  <span className={`score-badge ${profile.resumeScore > 75 ? 'good' : 'warning'}`}>
+                    {profile.resumeScore}/100
+                  </span>
+                </div>
+                <p className="ai-feedback-text"><strong>AI Feedback:</strong> {profile.resumeFeedback}</p>
+                {profile.resumeKeywords?.length > 0 && (
+                  <div className="ai-keywords">
+                    <strong>Extracted Skills:</strong>
+                    <div className="keyword-tags">
+                      {profile.resumeKeywords.map((kw, idx) => (
+                        <span key={idx} className="kw-tag">{kw}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="form-group">

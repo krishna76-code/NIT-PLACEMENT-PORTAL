@@ -89,3 +89,98 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* AI Resume Section */
+.ai-resume-section {
+  grid-column: 1 / -1;
+  background: var(--surface-50);
+  border: 1px dashed var(--primary);
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.resume-upload-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.file-input {
+  flex: 1;
+}
+
+.upload-status {
+  font-size: 0.9rem;
+  color: var(--primary);
+  font-weight: 500;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.ai-feedback-box {
+  margin-top: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.score-header h4 {
+  margin: 0;
+  color: var(--text);
+}
+
+.score-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.score-badge.good {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.score-badge.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.ai-feedback-text {
+  font-size: 0.95rem;
+  margin: 0.5rem 0 1rem 0;
+  line-height: 1.5;
+}
+
+.ai-keywords {
+  font-size: 0.9rem;
+}
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.kw-tag {
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}

@@ -123,6 +123,17 @@ router.put('/:appId/status', auth, async (req, res) => {
     application.status = status;
     await application.save();
 
+    // Create Notification
+    const Notification = require('../models/Notification');
+    const drive = await Drive.findById(application.drive);
+    await Notification.create({
+      user: application.student,
+      title: 'Application Status Updated',
+      message: `Your application for ${drive.company} has been marked as ${status}.`,
+      type: 'status',
+      link: '/applications'
+    });
+
     res.json({ message: 'Status updated successfully', application });
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });

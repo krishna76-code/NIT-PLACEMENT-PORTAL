@@ -121,13 +121,20 @@ router.post('/register-student',
     }
 
     try {
-      const { username, password, name } = req.body;
-      const exists = await User.findOne({ username: username.toLowerCase() });
+      let { username, password, name } = req.body;
+      username = username.toLowerCase().trim();
+      
+      // Optional: Enforce college domain if it's an email
+      if (username.includes('@') && !username.endsWith('@nitjsr.ac.in')) {
+        return res.status(400).json({ message: 'Only @nitjsr.ac.in emails are allowed.' });
+      }
+
+      const exists = await User.findOne({ username });
       if (exists) return res.status(400).json({ message: 'Username/Email already taken.' });
 
       const hashed = await bcrypt.hash(password, 12);
       const user = new User({
-        username: username.toLowerCase(),
+        username,
         password: hashed,
         role: 'student',
         name
@@ -140,7 +147,8 @@ router.post('/register-student',
 
       res.status(201).json({ message: 'Student registered successfully. You can now login.' });
     } catch (err) {
-      res.status(500).json({ message: 'Server error.' });
+      console.error('Registration error:', err);
+      res.status(500).json({ message: 'Server error during registration.' });
     }
   }
 );

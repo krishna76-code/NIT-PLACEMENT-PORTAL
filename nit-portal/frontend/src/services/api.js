@@ -41,6 +41,9 @@ export const registerStudent = (data) => api.post('/api/auth/register-student', 
 export const getStudentProfile = () => api.get('/api/student/profile')
 export const updateStudentProfile = (data) => api.put('/api/student/profile', data)
 export const getStudentDashboardStats = () => api.get('/api/student/dashboard-stats')
+export const uploadResume = (formData) => api.post('/api/student/resume-upload', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+})
 
 // Applications
 export const applyToDrive = (driveId) => api.post(`/api/applications/${driveId}`)
@@ -48,5 +51,10 @@ export const getMyApplications = () => api.get('/api/applications/me')
 export const getDriveApplicants = (driveId) => api.get(`/api/applications/drive/${driveId}`)
 export const updateApplicationStatus = (appId, status) => api.put(`/api/applications/${appId}/status`, { status })
 export const withdrawApplication = (appId) => api.delete(`/api/applications/${appId}`)
+
+// Notifications
+export const getNotifications = () => api.get('/api/notifications')
+export const markNotificationRead = (id) => api.put(`/api/notifications/${id}/read`)
+export const markAllNotificationsRead = () => api.put('/api/notifications/read-all')
 
 export default api

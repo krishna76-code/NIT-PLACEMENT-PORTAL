@@ -16,7 +16,8 @@ const StudentProfileSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   idCardLink: { type: String, default: '' },
   resumeScore: { type: Number, default: null },
-  resumeFeedback: { type: String, default: '' }
+  resumeFeedback: { type: String, default: '' },
+  resumeKeywords: { type: [String], default: [] }
 }, { timestamps: true });
 
 module.exports = mongoose.model('StudentProfile', StudentProfileSchema);

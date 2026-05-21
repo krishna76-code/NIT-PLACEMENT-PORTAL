@@ -7,9 +7,6 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const User = require('./models/User');
-const authRoutes = require('./routes/authRoutes');
-const driveRoutes = require('./routes/driveRoutes');
-const statsRoutes = require('./routes/statsRoutes');
 
 const app = express();
 
@@ -23,10 +20,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Global rate limiter — 100 requests per 15 minutes per IP
+// Global rate limiter — 1000 requests per 15 minutes per IP (increased for dev)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many requests, please try again later.' }
@@ -45,6 +42,9 @@ async function seedAdmin() {
       console.log("👤 Default admin created — username: admin, password: nitjsr2026");
       console.log("⚠️  Change this password immediately after first login!");
     }
+
+    const studentExists = await User.findOne({ role: 'student' });
+    // Default student logic removed as per user request
   } catch (err) {
     console.error('Seed error:', err.message);
   }
@@ -77,13 +77,19 @@ const connectDB = async () => {
 connectDB();
 
 // --- ROUTES ---
+const authRoutes = require('./routes/authRoutes');
+const driveRoutes = require('./routes/driveRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
+const statsRoutes = require('./routes/statsRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/drives', driveRoutes);
-app.use('/api/stats', statsRoutes);
-const studentRoutes = require('./routes/studentRoutes');
-const applicationRoutes = require('./routes/applicationRoutes');
-app.use('/api/student', studentRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'NIT Jamshedpur Placement API v2.0', status: 'running' });
@@ -104,3 +110,4 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+ 

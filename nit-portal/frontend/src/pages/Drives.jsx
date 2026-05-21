@@ -19,7 +19,7 @@ export default function DrivesPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({ branch: '', status: '', driveType: '', location: '', packageMin: '', packageMax: '' })
+  const [filters, setFilters] = useState({ branch: '', status: '', driveType: '', offerType: '', ctcRange: '', location: '' })
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [editDrive, setEditDrive] = useState(null)
   const [viewDrive, setViewDrive] = useState(null)
@@ -29,9 +29,18 @@ export default function DrivesPage() {
   const load = async () => {
     setLoading(true)
     try {
+      const apiFilters = { ...filters };
+      if (apiFilters.ctcRange) {
+        if (apiFilters.ctcRange === '<5') { apiFilters.packageMax = '5'; }
+        else if (apiFilters.ctcRange === '5-10') { apiFilters.packageMin = '5'; apiFilters.packageMax = '10'; }
+        else if (apiFilters.ctcRange === '10-20') { apiFilters.packageMin = '10'; apiFilters.packageMax = '20'; }
+        else if (apiFilters.ctcRange === '>20') { apiFilters.packageMin = '20'; }
+      }
+      delete apiFilters.ctcRange;
+
       const res = await fetchDrives({
         search,
-        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== '')),
+        ...Object.fromEntries(Object.entries(apiFilters).filter(([_, v]) => v !== '')),
         limit: PER_PAGE,
         page
       })
@@ -137,14 +146,26 @@ export default function DrivesPage() {
             <option value="cancelled">Cancelled</option>
           </select>
           <select value={filters.driveType} onChange={e => setFilter('driveType', e.target.value)}>
-            <option value="">All types</option>
-            <option value="on-campus">On-Campus</option>
-            <option value="off-campus">Off-Campus</option>
-            <option value="ppo">PPO</option>
-            <option value="internship">Internship</option>
+            <option value="">All Types</option>
+            <option value="On Campus">On Campus</option>
+            <option value="Off Campus">Off Campus</option>
+          </select>
+          <select value={filters.offerType} onChange={e => setFilter('offerType', e.target.value)}>
+            <option value="">All Offers</option>
+            <option value="6 Months Internship + PPO">Internship + PPO</option>
+            <option value="Full Time Employment (FTE)">FTE</option>
+            <option value="6 Months Internship + FTE">Internship + FTE</option>
+            <option value="Internship Only (6 Months)">Internship Only</option>
+          </select>
+          <select value={filters.ctcRange} onChange={e => setFilter('ctcRange', e.target.value)}>
+            <option value="">All CTC</option>
+            <option value="<5">&lt; 5 LPA</option>
+            <option value="5-10">5 - 10 LPA</option>
+            <option value="10-20">10 - 20 LPA</option>
+            <option value=">20">&gt; 20 LPA</option>
           </select>
           <button className="btn-advanced-filters" onClick={() => setShowAdvanced(!showAdvanced)}>
-            {showAdvanced ? 'Hide Advanced Filters' : 'Advanced Filters'}
+            {showAdvanced ? 'Hide Location Filter' : 'Location Filter'}
           </button>
         </div>
         
@@ -153,14 +174,6 @@ export default function DrivesPage() {
             <div className="filter-group">
               <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Location</label>
               <input type="text" placeholder="e.g. Bangalore" value={filters.location} onChange={e => setFilter('location', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)' }} />
-            </div>
-            <div className="filter-group">
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Min CTC (LPA)</label>
-              <input type="number" min="0" placeholder="0" value={filters.packageMin} onChange={e => setFilter('packageMin', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', width: '100px' }} />
-            </div>
-            <div className="filter-group">
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Max CTC (LPA)</label>
-              <input type="number" min="0" placeholder="100" value={filters.packageMax} onChange={e => setFilter('packageMax', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', width: '100px' }} />
             </div>
           </div>
         )}
@@ -173,22 +186,23 @@ export default function DrivesPage() {
             <tr>
               <th>Company</th>
               <th>Role</th>
-              <th>Branch</th>
+              <th>Branches</th>
               <th>Date</th>
-              <th>Count</th>
+              <th>Placed</th>
               <th>CTC</th>
               <th>CGPA Req</th>
-              <th>Type</th>
+              <th>Drive / Offer Type</th>
               <th>Status</th>
+              {isStudent && <th>AI Match</th>}
               {user && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan="9" className="table-empty">Loading...</td></tr>
+              <tr><td colSpan={isStudent ? "11" : (user ? "10" : "9")} className="table-empty">Loading...</td></tr>
             )}
             {!loading && drives.length === 0 && (
-              <tr><td colSpan="9" className="table-empty">No drives found</td></tr>
+              <tr><td colSpan={isStudent ? "11" : (user ? "10" : "9")} className="table-empty">No drives found</td></tr>
             )}
             {!loading && drives.map(d => (
               <tr key={d._id}>
@@ -199,17 +213,42 @@ export default function DrivesPage() {
                   </div>
                 </td>
                 <td className="role-cell">{d.role}</td>
-                <td><span className="branch-tag">{d.branch}</span></td>
+                <td>
+                  <div style={{display:'flex', gap:'4px', flexWrap:'wrap', maxWidth: '100px'}}>
+                    {(d.branches || []).map(b => <span key={b} className="branch-tag" style={{fontSize: '0.7rem', padding: '2px 4px'}}>{b}</span>)}
+                  </div>
+                </td>
                 <td className="date-cell">{d.date}</td>
-                <td><strong>{d.count}</strong></td>
+                <td>
+                  {d.status === 'completed' 
+                    ? <strong>{d.count}</strong> 
+                    : <span className="status-tag upcoming" style={{fontSize:'0.75rem'}}>Results Pending</span>
+                  }
+                </td>
                 <td>{d.ctc > 0 ? `${d.ctc} LPA` : '—'}</td>
                 <td>{d.cgpaReq > 0 ? d.cgpaReq : '—'}</td>
-                <td><span className="type-tag">{d.driveType}</span></td>
+                <td>
+                  <div style={{display:'flex', flexDirection:'column', gap:'4px'}}>
+                    <span className="type-tag">{d.driveType || 'On Campus'}</span>
+                    <span className="type-tag" style={{background: 'var(--primary-light)', color: 'var(--primary)'}}>{d.offerType || 'FTE'}</span>
+                  </div>
+                </td>
                 <td>
                   <span className={`status-tag ${STATUS_COLORS[d.status] || 'accent'}`}>
                     {d.status}
                   </span>
                 </td>
+                {isStudent && (
+                  <td>
+                    {d.matchScore !== null && d.matchScore !== undefined ? (
+                      <span className="type-tag" style={{ background: d.matchScore >= 75 ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', color: d.matchScore >= 75 ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>
+                        {d.matchScore}% Match
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Upload Resume</span>
+                    )}
+                  </td>
+                )}
                 {user && (
                   <td>
                     <div className="action-btns" style={{gap: '8px', display: 'flex'}}>
@@ -284,9 +323,15 @@ export default function DrivesPage() {
                   <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 20px', lineHeight: '2' }}>
                     <li><strong>CTC:</strong> {viewDrive.ctc ? `${viewDrive.ctc} LPA` : 'Not specified'}</li>
                     <li><strong>Location:</strong> {viewDrive.location || 'Not specified'}</li>
-                    <li><strong>Branch:</strong> {viewDrive.branch}</li>
-                    <li><strong>Type:</strong> {viewDrive.driveType}</li>
+                    <li><strong>Branches:</strong> {(viewDrive.branches || []).join(', ')}</li>
+                    <li><strong>Batches:</strong> {(viewDrive.batches || []).join(', ')}</li>
+                    <li><strong>Backlogs Allowed:</strong> {viewDrive.backlogsAllowed === 0 ? 'None' : viewDrive.backlogsAllowed}</li>
+                    <li><strong>Drive Type:</strong> {viewDrive.driveType}</li>
+                    <li><strong>Offer Type:</strong> {viewDrive.offerType}</li>
                     <li><strong>Status:</strong> {viewDrive.status}</li>
+                    {viewDrive.status === 'completed' && (
+                      <li><strong>Students Placed:</strong> {viewDrive.count}</li>
+                    )}
                   </ul>
                   
                   <h3>Timeline</h3>

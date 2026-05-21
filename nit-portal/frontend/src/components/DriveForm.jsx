@@ -3,16 +3,25 @@ import './DriveForm.css'
 
 const BRANCHES = ['CSE', 'ECE', 'EE', 'ME', 'CE', 'CH', 'MM', 'PH', 'MCA', 'MBA']
 const PROGRAMS = ['B.Tech', 'M.Tech', 'MBA', 'MCA', 'PhD', 'Dual Degree']
+const BATCHES = ['2024', '2025', '2026', '2027']
 const DRIVE_TYPES = [
-  { value: 'on-campus', label: 'On-Campus' },
-  { value: 'off-campus', label: 'Off-Campus' },
-  { value: 'ppo', label: 'PPO' },
-  { value: 'internship', label: 'Internship' }
+  { value: 'On Campus', label: 'On Campus' },
+  { value: 'Off Campus', label: 'Off Campus' }
+]
+const OFFER_TYPES = [
+  '6 Months Internship + PPO',
+  'Full Time Employment (FTE)',
+  '6 Months Internship + FTE',
+  'Internship Only (6 Months)'
 ]
 
 const defaultForm = {
-  company: '', role: '', date: '', count: '', branch: 'CSE',
-  program: 'B.Tech', ctc: '', cgpaReq: '', driveType: 'on-campus', status: 'completed', batch: '2026'
+  company: '', role: '', date: '', count: '', branches: ['CSE'],
+  program: 'B.Tech', ctc: '', cgpaReq: '', backlogsAllowed: '0', driveType: 'On Campus', 
+  offerType: 'Full Time Employment (FTE)', status: 'upcoming', batches: ['2026'],
+  location: '', requiredSkills: '', companyOverview: '', hiringProcess: '', 
+  eligibilityCriteria: '', previousQuestions: '',
+  registrationStart: '', registrationEnd: '', testDate: '', interviewDate: '', resultDate: ''
 }
 
 export default function DriveForm({ onSubmit, onCancel, initial = {} }) {
@@ -21,6 +30,16 @@ export default function DriveForm({ onSubmit, onCancel, initial = {} }) {
   const [error, setError] = useState('')
 
   const set = (field, val) => setForm(f => ({ ...f, [field]: val }))
+  
+  const toggleArray = (field, value) => {
+    setForm(f => {
+      const arr = f[field] || [];
+      if (arr.includes(value)) {
+        return { ...f, [field]: arr.filter(i => i !== value) };
+      }
+      return { ...f, [field]: [...arr, value] };
+    });
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -31,7 +50,19 @@ export default function DriveForm({ onSubmit, onCancel, initial = {} }) {
     }
     setLoading(true)
     try {
-      await onSubmit({ ...form, count: parseInt(form.count), ctc: parseFloat(form.ctc) || 0 })
+      const skillsArray = typeof form.requiredSkills === 'string' 
+        ? form.requiredSkills.split(',').map(s => s.trim()).filter(Boolean)
+        : form.requiredSkills;
+
+      await onSubmit({ 
+        ...form, 
+        count: parseInt(form.count) || 0, 
+        ctc: parseFloat(form.ctc) || 0,
+        backlogsAllowed: parseInt(form.backlogsAllowed) || 0,
+        requiredSkills: skillsArray,
+        branches: form.branches || ['CSE'],
+        batches: form.batches || ['2026']
+      })
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong.')
     } finally {
@@ -66,17 +97,43 @@ export default function DriveForm({ onSubmit, onCancel, initial = {} }) {
       </div>
 
       <div className="form-row">
-        <div className="form-field">
-          <label>Branch</label>
-          <select value={form.branch} onChange={e => set('branch', e.target.value)}>
-            {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
+        <div className="form-field" style={{ gridColumn: '1 / -1' }}>
+          <label>Eligible Branches *</label>
+          <div className="checkbox-grid">
+            {BRANCHES.map(b => (
+              <label key={b} className="checkbox-label">
+                <input type="checkbox" checked={(form.branches || []).includes(b)} onChange={() => toggleArray('branches', b)} />
+                {b}
+              </label>
+            ))}
+          </div>
         </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-field" style={{ gridColumn: '1 / -1' }}>
+          <label>Eligible Batches (Passing Year) *</label>
+          <div className="checkbox-grid">
+            {BATCHES.map(b => (
+              <label key={b} className="checkbox-label">
+                <input type="checkbox" checked={(form.batches || []).includes(b)} onChange={() => toggleArray('batches', b)} />
+                {b}
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="form-row">
         <div className="form-field">
           <label>Program</label>
           <select value={form.program} onChange={e => set('program', e.target.value)}>
             {PROGRAMS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
+        </div>
+        <div className="form-field">
+          <label>Backlogs Allowed</label>
+          <input type="number" placeholder="0" min="0" value={form.backlogsAllowed} onChange={e => set('backlogsAllowed', e.target.value)} />
         </div>
       </div>
 
@@ -92,21 +149,28 @@ export default function DriveForm({ onSubmit, onCancel, initial = {} }) {
       </div>
 
       <div className="form-row">
+        <div className="form-field" style={{ gridColumn: '1 / -1' }}>
+          <label>Required Skills (Comma separated for AI Matching) *</label>
+          <input type="text" placeholder="e.g. React, Node.js, Python, System Design" value={form.requiredSkills} onChange={e => set('requiredSkills', e.target.value)} required />
+        </div>
+      </div>
+
+      <div className="form-row">
         <div className="form-field">
           <label>Drive Type</label>
           <select value={form.driveType} onChange={e => set('driveType', e.target.value)}>
             {DRIVE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </div>
+        <div className="form-field">
+          <label>Offer Type</label>
+          <select value={form.offerType} onChange={e => set('offerType', e.target.value)}>
+            {OFFER_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
       </div>
 
       <div className="form-row">
-        <div className="form-field">
-          <label>Batch Year</label>
-          <select value={form.batch} onChange={e => set('batch', e.target.value)}>
-            {['2024', '2025', '2026', '2027'].map(y => <option key={y} value={y}>{y}</option>)}
-          </select>
-        </div>
         <div className="form-field">
           <label>Status</label>
           <select value={form.status} onChange={e => set('status', e.target.value)}>

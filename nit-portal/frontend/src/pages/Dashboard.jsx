@@ -327,7 +327,7 @@ export default function Dashboard() {
                   <div className="feed-avatar">{drive.company.charAt(0).toUpperCase()}</div>
                   <div className="feed-info">
                     <h5>{drive.company}</h5>
-                    <p>{drive.branch} · {drive.role} · <strong>{drive.count}</strong> placed</p>
+                    <p>{(drive.branches || []).join(', ')} · {drive.role} · {drive.status === 'completed' ? <span><strong>{drive.count}</strong> placed</span> : <span>Results Pending</span>}</p>
                   </div>
                   <div className="feed-right">
                     {drive.ctc > 0 && <span className="ctc-badge">{drive.ctc} LPA</span>}
