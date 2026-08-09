@@ -5,20 +5,21 @@ const DriveSchema = new mongoose.Schema({
   role: { type: String, required: true, trim: true },
   date: { type: String, required: true },
   count: { type: Number, required: true, min: 0 },
-  branches: { type: [String], required: true },
-  program: { type: String, required: true, default: 'B.Tech' },
+  branch: { type: mongoose.Schema.Types.Mixed }, // Supports array (['CSE', 'ECE']) or single string
+  branches: { type: [String], default: ['CSE'] },
+  program: { type: mongoose.Schema.Types.Mixed, default: ['B.Tech'] }, // Supports array or string
   cgpaReq: { type: Number, default: 0 },
   backlogsAllowed: { type: Number, default: 0 },
   ctc: { type: Number, default: 0 },           // CTC in LPA
   driveType: {
     type: String,
-    enum: ['On Campus', 'Off Campus'],
-    default: 'On Campus'
+    enum: ['on-campus', 'off-campus', 'ppo', 'internship', 'On Campus', 'Off Campus'],
+    default: 'on-campus'
   },
   offerType: {
     type: String,
-    enum: ['6 Months Internship + PPO', 'Full Time Employment (FTE)', '6 Months Internship + FTE', 'Internship Only (6 Months)'],
-    default: 'Full Time Employment (FTE)'
+    enum: ['6M Intern', '2M Intern', '6M + PPO', '2M + PPO', 'FTE', '6M + FTE', '6 Months Internship + PPO', 'Full Time Employment (FTE)', '6 Months Internship + FTE', 'Internship Only (6 Months)'],
+    default: 'FTE'
   },
   status: {
     type: String,
